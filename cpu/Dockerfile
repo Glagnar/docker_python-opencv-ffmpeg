@@ -5,6 +5,8 @@ FROM ubuntu:18.04
 ARG PYTHON_VERSION=3.7
 ARG OPENCV_VERSION=4.3.0
 
+RUN echo '[global]\nextra-index-url=https://www.piwheels.org/simple\n' >> /etc/pip.conf
+
 # Install all dependencies for OpenCV
 RUN apt-get -y update -qq --fix-missing && \
     apt-get -y install --no-install-recommends \
@@ -48,28 +50,27 @@ RUN apt-get -y update -qq --fix-missing && \
         zlib1g-dev \
         libsm6 \
         libxext6 \
-        libxrender1 \
-    && \
+        libxrender1
 
 # install python dependencies
-    sysctl -w net.ipv4.ip_forward=1 && \
+RUN sysctl -w net.ipv4.ip_forward=1 && \
     wget https://bootstrap.pypa.io/get-pip.py --progress=bar:force:noscroll --no-check-certificate && \
     python${PYTHON_VERSION} get-pip.py && \
     rm get-pip.py && \
-    pip${PYTHON_VERSION} install numpy && \
+    pip${PYTHON_VERSION} install numpy 
 
 # Install OpenCV
-    wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip -O opencv.zip --progress=bar:force:noscroll --no-check-certificate && \
+RUN wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip -O opencv.zip --progress=bar:force:noscroll --no-check-certificate && \
     unzip -q opencv.zip && \
     mv /opencv-${OPENCV_VERSION} /opencv && \
     rm opencv.zip && \
     wget https://github.com/opencv/opencv_contrib/archive/${OPENCV_VERSION}.zip -O opencv_contrib.zip --progress=bar:force:noscroll --no-check-certificate && \
     unzip -q opencv_contrib.zip && \
     mv /opencv_contrib-${OPENCV_VERSION} /opencv_contrib && \
-    rm opencv_contrib.zip && \
+    rm opencv_contrib.zip 
 
 # Prepare build
-    mkdir /opencv/build && \
+RUN mkdir /opencv/build && \
     cd /opencv/build && \
     cmake \
       -D CMAKE_BUILD_TYPE=RELEASE \
@@ -105,31 +106,6 @@ RUN apt-get -y update -qq --fix-missing && \
 # cleaning
     apt-get -y remove \
         unzip \
-        cmake \
-        gfortran \
-        apt-utils \
-        pkg-config \
-        checkinstall \
-        build-essential \
-        libatlas-base-dev \
-        libgtk2.0-dev \
-        libavcodec-dev \
-        libavformat-dev \
-        libavutil-dev \
-        libswscale-dev \
-        libjpeg8-dev \
-        libpng12-dev \
-        libtiff5-dev \
-        libdc1394-22-dev \
-        libxine2-dev \
-        libv4l-dev \
-        libgstreamer1.0-dev \
-        libgstreamer-plugins-base1.0-dev \
-        libglew-dev \
-        libpostproc-dev \
-        libeigen3-dev \
-        libtbb-dev \
-        zlib1g-dev \
     && \
     apt-get autoremove -y && \
     apt-get clean && \
